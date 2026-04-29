@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useFlags } from "@/components/flags/FlagsProvider";
 
 export function Hero() {
-  const { path } = useFlags();
+  const { path, setStep } = useFlags();
   const isEmailFirst = path === "C";
 
   const [value, setValue] = useState("");
@@ -14,13 +14,17 @@ export function Hero() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (isEmailFirst) {
-      // Email captured here on the homepage. Skip the email step in the
-      // funnel and start at step 1 (Address) — matches the experiment's
-      // intent: email first, then address.
-      const q = new URLSearchParams({ path: "C", step: "1" });
+      // Email captured here on the homepage. Jump the funnel state to
+      // step 1 (Address) BEFORE navigating — FlagsProvider only reads URL
+      // params on initial mount, so we update React state directly.
+      setStep(1);
+      const q = new URLSearchParams({ path: "C" });
       if (value) q.set("email", value);
       router.push(`/onboarding?${q.toString()}`);
     } else {
+      // Other paths start at step 0 (Address screen). Reset in case the
+      // user is coming back from a deep step.
+      setStep(0);
       const q = new URLSearchParams();
       if (path !== "0") q.set("path", path);
       if (value) q.set("addr", value);
