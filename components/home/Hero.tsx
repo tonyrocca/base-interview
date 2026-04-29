@@ -2,16 +2,31 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useFlags } from "@/components/flags/FlagsProvider";
 
 export function Hero() {
-  const [address, setAddress] = useState("");
+  const { path } = useFlags();
+  const isEmailFirst = path === "C";
+
+  const [value, setValue] = useState("");
   const router = useRouter();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    router.push(
-      address ? `/onboarding?addr=${encodeURIComponent(address)}` : "/onboarding",
-    );
+    if (isEmailFirst) {
+      // Email captured here on the homepage. Skip the email step in the
+      // funnel and start at step 1 (Address) — matches the experiment's
+      // intent: email first, then address.
+      const q = new URLSearchParams({ path: "C", step: "1" });
+      if (value) q.set("email", value);
+      router.push(`/onboarding?${q.toString()}`);
+    } else {
+      const q = new URLSearchParams();
+      if (path !== "0") q.set("path", path);
+      if (value) q.set("addr", value);
+      const qs = q.toString();
+      router.push(qs ? `/onboarding?${qs}` : "/onboarding");
+    }
   }
 
   return (
@@ -82,30 +97,46 @@ export function Hero() {
         <form onSubmit={handleSubmit} className="mt-8 max-w-[520px]">
           <div className="flex h-[56px] items-center rounded-btn border border-white/40 bg-white/10 pl-4 pr-1.5 backdrop-blur-md transition focus-within:border-white">
             <span aria-hidden className="text-white/80">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"
-                  fill="currentColor"
-                />
-              </svg>
+              {isEmailFirst ? (
+                // Mail icon
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M3 6.75A2.75 2.75 0 015.75 4h12.5A2.75 2.75 0 0121 6.75v10.5A2.75 2.75 0 0118.25 20H5.75A2.75 2.75 0 013 17.25V6.75zm2.06 0a.75.75 0 00-.06.3v.21l7 4.55 7-4.55v-.21a.75.75 0 00-.06-.3l-7 4.55-6.88-4.55z"
+                    fill="currentColor"
+                  />
+                </svg>
+              ) : (
+                // Pin icon
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"
+                    fill="currentColor"
+                  />
+                </svg>
+              )}
             </span>
             <input
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Enter your home address"
+              key={isEmailFirst ? "email" : "address"} // remount on path change
+              type={isEmailFirst ? "email" : "text"}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder={
+                isEmailFirst ? "Enter your email" : "Enter your home address"
+              }
               className="flex-1 bg-transparent px-3 text-[15px] text-white placeholder:text-white/60 focus:outline-none"
             />
             <button
               type="submit"
               className="h-[44px] rounded-btn bg-base-green-mid px-5 text-[14px] font-semibold text-base-green-dark transition hover:bg-base-green-light"
             >
-              See available plans
+              {isEmailFirst ? "Get my plan" : "See available plans"}
             </button>
           </div>
           <div className="mt-4 flex items-center gap-2 text-[13px] text-white/85">
             <span className="inline-flex h-1.5 w-1.5 rounded-full bg-base-green-mid" />
-            Join 10,000+ homes powered by Base
+            {isEmailFirst
+              ? "Even if you don't finish, we'll send your custom plan"
+              : "Join 10,000+ homes powered by Base"}
           </div>
         </form>
       </div>
