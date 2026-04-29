@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+.DS_Store
+.env*.local
+*.log
+.vercel
+next-env.d.ts
+dist/
+.claude/
+public/img/slides/hero-handshake.png

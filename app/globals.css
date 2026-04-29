@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Base Power brand fonts (self-hosted from Webflow CDN)
+   ============================================================ */
+@font-face {
+  font-family: "PP Neue Montreal";
+  src: url("/fonts/PPNeueMontreal-Variable.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ClarendonWide";
+  src: url("/fonts/ClarendonWide-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   Base Power brand tokens (sourced from their live stylesheet)
+   ============================================================ */
+:root {
+  /* Greens */
+  --green-100: #102a17; /* deepest forest */
+  --green-90: #1e4d2b;  /* dark green / ink-on-green */
+  --green-60: #77a45a;  /* primary CTA / brand sage */
+  --green-20: #b2dd79;  /* mid lime */
+  --green-5:  #d6f0b4;  /* cream-green / light backgrounds */
+
+  /* Greys */
+  --grey-100: #292826;  /* near-black body */
+  --grey-80:  #54524f;
+  --grey-60:  #7f7d7a;  /* muted */
+  --grey-40:  #a9a8a7;
+  --grey-20:  #d8d7d5;  /* borders */
+  --grey-5:   #f0eeeb;  /* cream surface */
+
+  /* Surfaces */
+  --surface-secondary: #eff1f2;
+  --label-primary: #090d0feb;
+  --label-secondary: #040b0fad;
+  --label-tertiary: #030b0f85;
+
+  /* Brand semantic mapping */
+  --base-bg: #f7f6f3;       /* page background — slightly warm */
+  --base-cream: var(--grey-5);
+  --base-cream-2: #e7e4de;
+  --base-ink: var(--grey-100);
+  --base-ink-2: var(--green-90);
+  --base-muted: var(--grey-60);
+  --base-line: var(--grey-20);
+  --base-green: var(--green-60);
+  --base-green-dark: var(--green-90);
+  --base-green-light: var(--green-5);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--base-bg);
+  color: var(--base-ink);
+  font-family: "PP Neue Montreal", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Clarendon is for tagline / eyebrow uppercase labels only — NOT body headlines */
+.tagline {
+  font-family: "ClarendonWide", "Times New Roman", Georgia, serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 120%;
+}
+
+/* Heading utility — PP Neue Montreal Variable, the actual brand display font */
+.font-display {
+  font-family: "PP Neue Montreal", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  font-weight: 700;
+  line-height: 120%;
+}
+
+/* hide scrollbars in phone frame */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+/* subtle border util */
+.hairline {
+  box-shadow: inset 0 0 0 1px var(--base-line);
+}

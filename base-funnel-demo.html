@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Base Power Funnel — Demo</title>
+<style>
+  :root {
+    --base-green: #B8E15C;
+    --base-green-dark: #9DC73D;
+    --base-ink: #1B3A2F;
+    --base-ink-2: #2C4F3F;
+    --base-cream: #EFEBE2;
+    --base-cream-2: #E5E0D5;
+    --base-line: #C9C2B5;
+    --base-text: #1B3A2F;
+    --base-muted: #6F7A6E;
+    --bg: #F4F1EA;
+    --panel: #FFFFFF;
+    --panel-border: #E2DDD2;
+    --accent: #1B3A2F;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--base-text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased; min-height: 100vh;
+  }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px; background: #fff; border-bottom: 1px solid var(--panel-border);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar h1 {
+    font-size: 16px; margin: 0; font-weight: 600; letter-spacing: -0.01em; color: var(--base-ink);
+  }
+  .topbar h1 .sub { color: var(--base-muted); font-weight: 400; margin-left: 8px; }
+  .pathbar { display: flex; gap: 6px; }
+  .pathbtn {
+    border: 1px solid var(--panel-border); background: #fff; color: var(--base-ink);
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: all 0.15s ease; white-space: nowrap;
+  }
+  .pathbtn:hover { background: var(--base-cream); }
+  .pathbtn.active { background: var(--base-ink); color: #fff; border-color: var(--base-ink); }
+
+  .stage {
+    display: grid; grid-template-columns: 1fr 380px; gap: 36px;
+    max-width: 1180px; margin: 0 auto; padding: 36px 28px;
+  }
+  @media (max-width: 900px) {
+    .stage { grid-template-columns: 1fr; }
+  }
+  .demo-col { display: flex; flex-direction: column; align-items: center; }
+  .phone-meta {
+    width: 390px; max-width: 100%; margin-bottom: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--base-muted);
+  }
+  .phone-meta .step-pill {
+    background: #fff; border: 1px solid var(--panel-border); padding: 4px 10px; border-radius: 999px;
+    font-weight: 500; color: var(--base-ink);
+  }
+  .phone {
+    width: 390px; max-width: 100%; height: 760px;
+    background: #000; border-radius: 44px; padding: 12px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+    position: relative;
+  }
+  .phone::before {
+    content: ""; position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 28px; background: #000; border-radius: 999px; z-index: 5;
+  }
+  .screen {
+    width: 100%; height: 100%; background: var(--base-cream); border-radius: 32px;
+    overflow: hidden; position: relative; display: flex; flex-direction: column;
+  }
+  .screen-scroll { flex: 1; overflow-y: auto; }
+  .screen-scroll::-webkit-scrollbar { display: none; }
+
+  /* Header in screen */
+  .scr-header {
+    padding: 56px 22px 14px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    font-weight: 800; font-size: 14px; letter-spacing: 0.05em;
+    border: 1.5px solid var(--base-ink); border-radius: 6px; padding: 4px 10px; color: var(--base-ink);
+  }
+  .scr-header .right { font-size: 13px; color: var(--base-ink); font-weight: 600; }
+
+  .progress-bar {
+    height: 4px; width: 100%; background: rgba(27,58,47,0.10); margin-top: 0;
+    position: relative;
+  }
+  .progress-bar .fill { height: 100%; background: var(--base-ink); transition: width 0.3s; }
+  .progress-mini {
+    display: flex; gap: 4px; padding: 4px 22px 0;
+  }
+  .progress-mini .dot {
+    flex: 1; height: 3px; background: rgba(27,58,47,0.15); border-radius: 2px;
+  }
+  .progress-mini .dot.done { background: var(--base-ink); }
+
+  .step-num {
+    display: inline-block; background: var(--base-ink); color: #fff;
+    font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-bottom: 10px;
+  }
+  .scr-body { padding: 14px 22px 18px; }
+  .scr-title {
+    font-size: 22px; line-height: 1.25; font-weight: 700; color: var(--base-ink);
+    letter-spacing: -0.01em; margin: 0 0 10px;
+  }
+  .scr-title.lg { font-size: 28px; }
+  .scr-sub {
+    font-size: 14px; line-height: 1.5; color: var(--base-ink-2); margin: 0 0 16px;
+  }
+  .scr-helper { font-size: 12px; color: var(--base-muted); margin-bottom: 8px; }
+  .opt-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .opt {
+    background: rgba(27,58,47,0.06); border: 1px solid transparent; padding: 14px 16px;
+    border-radius: 10px; font-size: 14px; color: var(--base-ink); cursor: pointer;
+  }
+  .opt:hover { background: rgba(27,58,47,0.10); }
+  .opt.selected { background: rgba(184,225,92,0.25); border-color: var(--base-green-dark); }
+  .opt b { font-weight: 700; }
+  .opt small { display: block; color: var(--base-muted); margin-top: 2px; font-size: 12px; }
+
+  .input-row {
+    display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px;
+  }
+  .field label {
+    display: block; font-size: 13px; font-weight: 600; color: var(--base-ink); margin-bottom: 4px;
+  }
+  .field input {
+    width: 100%; border: none; border-bottom: 1px solid var(--base-line);
+    background: transparent; padding: 8px 0; font-size: 15px; color: var(--base-ink);
+    font-family: inherit; outline: none;
+  }
+  .field input::placeholder { color: rgba(27,58,47,0.35); }
+  .field.boxed input {
+    border: 1px solid var(--base-line); border-radius: 10px; padding: 12px 14px; background: #fff;
+  }
+
+  .tcpa {
+    font-size: 11px; color: var(--base-muted); line-height: 1.45; margin-bottom: 14px;
+    padding: 10px 12px; background: rgba(27,58,47,0.04); border-radius: 8px;
+  }
+  .tcpa.collapsed {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding: 8px 12px;
+  }
+  .tcpa.collapsed span { font-weight: 500; color: var(--base-ink); }
+
+  .scr-footer {
+    padding: 14px 18px 26px; display: flex; gap: 8px;
+    border-top: 1px solid rgba(27,58,47,0.08); background: var(--base-cream);
+  }
+  .btn {
+    flex: 1; background: var(--base-green); color: var(--base-ink);
+    border: 1.5px solid var(--base-ink); padding: 13px 18px; font-size: 15px;
+    font-weight: 700; border-radius: 10px; cursor: pointer; font-family: inherit;
+    transition: transform 0.05s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.ghost { background: transparent; color: var(--base-ink); border-color: var(--base-line); flex: 0 0 56px; }
+  .btn.skip { background: transparent; color: var(--base-muted); border: none; flex: 0 0 auto; padding: 13px 12px; }
+
+  .hero {
+    background: linear-gradient(180deg, #2C4F3F 0%, #1B3A2F 100%);
+    color: #fff; padding: 56px 22px 24px; min-height: 360px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .hero .topnote { font-size: 11px; color: rgba(255,255,255,0.85); text-align: center; margin-bottom: 16px; }
+  .hero .topnote u { color: var(--base-green); text-decoration-color: var(--base-green); }
+  .hero .logo-w { color: #fff; border-color: #fff; align-self: flex-start; margin-bottom: auto; }
+  .hero .stars { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #fff; margin-bottom: 10px; }
+  .hero h1 { font-size: 34px; line-height: 1.05; margin: 0 0 10px; font-weight: 800; letter-spacing: -0.02em; }
+  .hero p { font-size: 14px; line-height: 1.4; color: rgba(255,255,255,0.85); margin: 0 0 16px; }
+  .hero .addrbox {
+    background: #fff; border-radius: 10px; padding: 12px 14px;
+    display: flex; align-items: center; gap: 8px; color: var(--base-muted);
+    font-size: 14px; margin-bottom: 10px;
+  }
+  .hero .pin { color: var(--base-ink); }
+  .hero .ctabtn {
+    width: 100%; background: var(--base-green); color: var(--base-ink);
+    border: none; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 15px;
+    cursor: pointer;
+  }
+  .hero .joins { font-size: 11px; color: rgba(255,255,255,0.7); text-align: center; margin-top: 10px; }
+
+  .vp {
+    background: var(--base-cream); padding: 28px 22px;
+  }
+  .vp h2 { font-size: 24px; line-height: 1.2; margin: 6px 0 16px; color: var(--base-ink); }
+  .vp .check {
+    display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px;
+    font-size: 13px; line-height: 1.45; color: var(--base-ink-2);
+  }
+  .vp .check::before {
+    content: "✓"; color: var(--base-green-dark); font-weight: 700; font-size: 16px;
+    line-height: 1; margin-top: 1px;
+  }
+
+  .interstitial-icon { font-size: 30px; margin-bottom: 6px; }
+
+  .info-col {}
+  .info-card {
+    background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px;
+    padding: 22px; position: sticky; top: 88px;
+  }
+  .info-card .tag {
+    display: inline-block; background: var(--base-ink); color: #fff;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 4px;
+    margin-bottom: 10px; text-transform: uppercase;
+  }
+  .info-card h2 {
+    font-size: 20px; margin: 0 0 6px; color: var(--base-ink); letter-spacing: -0.01em;
+  }
+  .info-card .sub {
+    font-size: 13px; line-height: 1.5; color: var(--base-muted); margin-bottom: 18px;
+  }
+  .info-card h3 {
+    font-size: 12px; font-weight: 700; color: var(--base-muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin: 18px 0 8px;
+  }
+  .info-card ul { padding-left: 18px; margin: 0; }
+  .info-card ul li { font-size: 13px; line-height: 1.5; color: var(--base-ink-2); margin-bottom: 4px; }
+  .info-card .stepinfo {
+    margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--panel-border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: var(--base-muted);
+  }
+  .info-card .reset {
+    background: transparent; border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 6px 12px; font-size: 12px; color: var(--base-ink); cursor: pointer; font-weight: 500;
+  }
+  .info-card .reset:hover { background: var(--base-cream); }
+  .info-card .changeline {
+    display: flex; gap: 8px; padding: 8px 10px; background: var(--base-cream);
+    border-radius: 8px; font-size: 12px; color: var(--base-ink-2); margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .info-card .changeline::before {
+    content: "→"; color: var(--base-green-dark); font-weight: 700;
+  }
+
+  .neighbor-chip {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    background: rgba(184,225,92,0.18); border-radius: 999px; font-size: 12px;
+    color: var(--base-ink); margin-bottom: 14px; align-self: flex-start;
+  }
+  .neighbor-chip::before {
+    content: ""; width: 6px; height: 6px; background: var(--base-green-dark); border-radius: 50%;
+  }
+
+  .what-next {
+    margin-top: 14px; padding: 10px 12px; background: rgba(27,58,47,0.05);
+    border-left: 3px solid var(--base-green-dark); font-size: 12px; line-height: 1.5;
+    color: var(--base-ink-2); border-radius: 4px;
+  }
+  .what-next b { color: var(--base-ink); }
+
+  .priceblock {
+    background: #fff; border: 1px solid var(--base-line); border-radius: 12px;
+    padding: 16px; margin-bottom: 12px;
+  }
+  .priceblock .row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+  .priceblock .row.lg { font-size: 18px; font-weight: 700; color: var(--base-ink); margin-top: 8px; }
+
+  .video-stub {
+    background: #000; color: #fff; aspect-ratio: 16/9; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    margin-bottom: 14px; position: relative;
+  }
+  .video-stub::after {
+    content: "▶"; position: absolute; font-size: 28px; opacity: 0.9;
+  }
+
+  .iconpick {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px;
+  }
+  .iconpick .ip {
+    background: rgba(27,58,47,0.06); border-radius: 10px; padding: 14px 10px;
+    text-align: center; cursor: pointer; font-size: 12px; color: var(--base-ink); border: 1px solid transparent;
+  }
+  .iconpick .ip:hover { background: rgba(27,58,47,0.10); }
+  .iconpick .ip.selected { background: rgba(184,225,92,0.25); border-color: var(--base-green-dark); }
+  .iconpick .ip .glyph { font-size: 22px; margin-bottom: 4px; display: block; }
+
+  .summary-row {
+    display: flex; justify-content: space-between; font-size: 13px; padding: 10px 0;
+    border-bottom: 1px dashed var(--panel-border);
+  }
+  .summary-row b { color: var(--base-ink); }
+
+  .auto-fill-pill {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+    background: rgba(184,225,92,0.25); border-radius: 999px; font-size: 11px;
+    color: var(--base-ink-2); margin-left: 6px; font-weight: 600;
+  }
+
+  .footer-note {
+    text-align: center; padding: 30px 20px; color: var(--base-muted); font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>Base Power Funnel <span class="sub">— interactive demo, all 5 paths</span></h1>
+  <div class="pathbar">
+    <button class="pathbtn active" data-path="0">Path 0 · Today</button>
+    <button class="pathbtn" data-path="A">A · Email-First</button>
+    <button class="pathbtn" data-path="B">B · Radically Short</button>
+    <button class="pathbtn" data-path="C">C · Smart Defaults</button>
+    <button class="pathbtn" data-path="D">D · Trust-Building</button>
+  </div>
+</header>
+
+<main class="stage">
+  <div class="demo-col">
+    <div class="phone-meta">
+      <span id="phoneMetaPath">Path 0 · Today</span>
+      <span class="step-pill"><span id="phoneMetaStep">1</span> / <span id="phoneMetaTotal">11</span></span>
+    </div>
+    <div class="phone">
+      <div class="screen" id="screen"></div>
+    </div>
+  </div>
+
+  <aside class="info-col">
+    <div class="info-card">
+      <span class="tag" id="infoTag">PATH 0</span>
+      <h2 id="infoTitle">Today's flow</h2>
+      <p class="sub" id="infoDesc">Replicating Base's existing funnel, exactly as a customer experiences it.</p>
+
+      <h3>What's different from today</h3>
+      <div id="infoChanges"></div>
+
+      <h3>What this path teaches us</h3>
+      <p class="sub" id="infoLearn" style="margin-bottom: 0;">Baseline. We're measuring the leak.</p>
+
+      <div class="stepinfo">
+        <span>Step <b id="infoStep">1</b> of <b id="infoTotal">11</b></span>
+        <button class="reset" onclick="resetPath()">Restart path</button>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="footer-note">
+  Click the path buttons at the top to switch flows. Tap the green button in the phone to advance through each path.
+</div>
+
+<script>
+// ============================================================
+// Demo state and rendering
+// ============================================================
+
+const state = {
+  path: '0',
+  step: 0,
+};
+
+// Helper: SVG check / star icons
+const star = '<svg width="11" height="11" viewBox="0 0 24 24" fill="#FFC107"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>'.repeat(5);
+
+// ============================================================
+// SHARED SCREEN BUILDERS
+// ============================================================
+
+function homepage() {
+  return `
+    <div class="screen-scroll">
+      <div class="hero">
+        <div class="logo logo-w">BASE</div>
+        <div style="flex: 1; min-height: 30px;"></div>
+        <div class="stars">${star} <span style="margin-left:4px">4.9 stars</span></div>
+        <h1>Save money.<br/>Stay powered.</h1>
+        <p>The power company bringing affordable, reliable energy to homes across America.</p>
+        <div class="addrbox"><span class="pin">📍</span><span>Enter your home address</span></div>
+        <button class="ctabtn" onclick="next()">See available plans</button>
+        <div class="joins">Join 10,000+ homes powered by Base</div>
+      </div>
+    </div>
+  `;
+}
+
+function qualifyHeader(numerator, denominator, useProgressBar) {
+  if (useProgressBar) {
+    const pct = Math.round((numerator / denominator) * 100);
+    const remaining = Math.max(1, Math.ceil((denominator - numerator) * 0.4));
+    return `
+      <div class="scr-header"><div class="logo">BASE</div></div>
+      <div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>
+      <div style="padding: 6px 22px 0; font-size: 11px; color: var(--base-muted); display:flex; justify-content:space-between;">
+        <span>Step ${numerator} of ${denominator}</span>
+        <span>~${remaining * 20}s left</span>
+      </div>
+    `;
+  }
+  // mini segmented dots like Base today
+  let dots = '';
+  for (let i = 0; i < denominator; i++) {
+    dots += `<div class="dot ${i < numerator ? 'done' : ''}"></div>`;
+  }
+  return `
+    <div class="scr-header"><div class="logo">BASE</div></div>
+    <div class="progress-mini">${dots}</div>
+  `;
+}
+
+function footer(label = 'OK', back = true) {
+  return `
+    <div class="scr-footer">
+      ${back ? `<button class="btn ghost" onclick="prev()">‹</button>` : ''}
+      <button class="btn" onclick="next()">${label}</button>
+    </div>
+  `;
+}
+
+function footerSkip() {
+  return `
+    <div class="scr-footer">
+      <button class="btn ghost" onclick="prev()">‹</button>
+      <button class="btn skip" onclick="next()">Skip for now</button>
+      <button class="btn" onclick="next()">OK</button>
+    </div>
+  `;
+}
+
+// ============================================================
+// PATH 0 — TODAY
+// ============================================================
+const PATH_0 = {
+  name: 'Path 0 · Today',
+  tag: 'BASELINE',
+  title: 'Today\'s flow',
+  desc: 'Base\'s current funnel. 11 screens between landing and lead capture.',
+  changes: ['Baseline — no changes from today.'],
+  learn: 'This is what we\'re trying to fix. The 19,000 visitors who qualify but never give us contact info live in the gap between the qualifying screen and step 9.',
+  screens: [
+    () => homepage(),
+    // qualify - rent/own
+    () => `
+      ${qualifyHeader(1, 7, false)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <span class="step-num">1</span>
+        <h2 class="scr-title">🎉 Great news. Base is available in your part of Pflugerville!</h2>
+        <p class="scr-sub">We've got a few questions to make sure your home is a great fit for Base — no commitments.</p>
+        <p class="scr-sub" style="font-weight:600">First off, do you own or rent your home?*</p>
+        <div class="opt-list">
+          <div class="opt">I own my home</div>
+          <div class="opt">I rent</div>
+        </div>
+      </div></div>
+      ${footer('OK', false)}
+    `,
+    // reason
+    () => `
+      ${qualifyHeader(2, 7, false)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 100px; background:rgba(27,58,47,0.08); border-radius:8px; margin-bottom: 18px; display:flex; align-items:center; justify-content:center; color:var(--base-muted); font-size:12px;">[lifestyle photo]</div>
+        <span class="step-num">2</span>
+        <h2 class="scr-title">What's your main reason for considering Base?*</h2>
+        <div class="opt-list">
+          <div class="opt">Having reliable backup power at an affordable price</div>
+          <div class="opt">Paying a low, fixed energy rate</div>
+          <div class="opt">Both — saving on energy and staying backed up</div>
+        </div>
+      </div></div>
+      ${footer()}
+    `,
+    // interstitial 1
+    () => `
+      ${qualifyHeader(2, 7, false)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <h2 class="scr-title">Sounds good, here's how Base works for both savings and backup power.</h2>
+        <p class="scr-sub"><b>Base pairs low, fixed energy rates with a backup battery for your home.</b> The battery is what lets us keep your rate low for 3 years, then legally guarantee it stays below the market average.</p>
+        <p class="scr-sub">We use the battery to help support the Texas grid when it's up, and when the grid goes down, that energy powers your home. The battery charge will fluctuate as it supports the grid, but it holds enough to cover most power outages.</p>
+        <p class="scr-sub" style="font-weight:600">We just need to ensure we can install a battery at your home to offer you our low energy rate. Let's see if your home is a fit.</p>
+      </div></div>
+      ${footer('Awesome, sounds great')}
+    `,
+    // electricity
+    () => `
+      ${qualifyHeader(3, 7, false)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <span class="step-num">3</span>
+        <h2 class="scr-title">How do you get your electricity today?*</h2>
+        <div class="opt-list">
+          <div class="opt"><b>I pick my own electricity plan</b><small>I can choose my electricity provider</small></div>
+          <div class="opt"><b>My electricity provider is assigned</b><small>I get electricity from my city or electric co-op and can't switch</small></div>
+          <div class="opt">I'm not sure</div>
+        </div>
+      </div></div>
+      ${footer()}
+    `,
+    // energy setup
+    () => `
+      ${qualifyHeader(4, 7, false)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <span class="step-num">4</span>
+        <h2 class="scr-title">What does your home energy setup look like?*</h2>
+        <p class="scr-sub">We'll make sure your backup setup plays nicely with the rest of your home.</p>
+        <div class="scr-helper">Choose as many as you like</div>
+        <div class="opt-list">
+          <div class="opt">I have solar panels installed</div>
+          <div class="opt">I have a portable generator</div>
+          <div class="opt">I have a whole-home standby generator</div>
+          <div class="opt">I have a whole-home battery</div>
+          <div class="opt">None of the above</div>
+        </div>
+      </div></div>
+      ${footer()}
+    `,
+    // interstitial 2
+    () => `
+      ${qualifyHeader(4, 7, false)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <h2 class="scr-title">Perfect — Base is a great place to start.</h2>
+        <p class="scr-sub">Most members come to us looking for a simpler, smarter way to power their home — without solar or a generator.</p>
+        <p class="scr-sub">You'll get stable rates, automatic backup, and peace of mind without overthinking it. If you ever want to add solar later, we make that easy too.</p>
+      </div></div>
+      ${footer('Great!')}
+    `,
+    // ⚠️ THE LEAD CAPTURE SCREEN
+    () => `
+      ${qualifyHeader(5, 7, false)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 30px"></div>
+        <span class="step-num">5</span>
+        <h2 class="scr-title">Last step — save your progress.*</h2>
+        <div class="tcpa">
+          By providing your contact information and clicking "OK," you agree to receive — at the phone number below — calls, text messages, and prerecorded voice messages from Base Power, Inc. regarding our services. Consent is not a condition of any purchase.
+        </div>
+        <div class="input-row">
+          <div class="field"><label>First name*</label><input placeholder="Jane"/></div>
+          <div class="field"><label>Last name*</label><input placeholder="Smith"/></div>
+          <div class="field"><label>Phone number*</label><input placeholder="(201) 555-0123"/></div>
+          <div class="field"><label>Email*</label><input placeholder="name@example.com"/></div>
+        </div>
+      </div></div>
+      ${footer()}
+    `,
+    // video page
+    () => `
+      ${qualifyHeader(6, 7, false)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 40px"></div>
+        <h2 class="scr-title">What to expect with Base Power</h2>
+        <div class="video-stub">Base: What to expect (YouTube)</div>
+      </div></div>
+      ${footer('Continue')}
+    `,
+    // schedule call options
+    () => `
+      ${qualifyHeader(7, 7, false)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <span class="step-num">7</span>
+        <h2 class="scr-title">You're ready for backup power*</h2>
+        <div class="opt-list">
+          <div class="opt"><b>Request a risk free home photo review</b><small>(most popular)</small></div>
+          <div class="opt">Get more information from a Base Energy Advisor</div>
+        </div>
+      </div></div>
+      ${footer('Submit')}
+    `,
+    // confirmation
+    () => `
+      ${qualifyHeader(7, 7, false)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 80px"></div>
+        <h2 class="scr-title">You're all set, Tony.</h2>
+        <p class="scr-sub">A Base Energy Advisor will reach out within 24 hours.</p>
+      </div></div>
+    `,
+  ],
+};
+
+// ============================================================
+// PATH A — EMAIL-FIRST
+// ============================================================
+const PATH_A = {
+  name: 'Path A · Email-First',
+  tag: 'PATH A',
+  title: 'Email-First',
+  desc: 'Capture email immediately after qualifying. Defer phone to the schedule-a-call moment.',
+  changes: [
+    'Email asked at step 1 of qualifying (not step 5)',
+    'Phone deferred until after pricing is shown',
+    'Soft questions combined onto one screen',
+    'Educational interstitials cut',
+    'Real progress bar added',
+  ],
+  learn: 'Does asking for low-friction PII upfront cost us anything? If no — we unlock recovery for every bailer. Bear case: ToFu drops because email feels like commitment too early.',
+  screens: [
+    () => homepage(),
+    // qualify + email same screen
+    () => `
+      ${qualifyHeader(1, 6, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 30px"></div>
+        <h2 class="scr-title">🎉 Great news — Base is available in Pflugerville.</h2>
+        <p class="scr-sub">Where should we send your custom plan? We'll save your progress so you don't have to start over.</p>
+        <div class="input-row">
+          <div class="field boxed"><label>Email</label><input placeholder="name@example.com"/></div>
+        </div>
+        <p class="scr-helper">No spam. We'll only use this to send your plan and pick up where you left off.</p>
+      </div></div>
+      ${footer('Continue', false)}
+    `,
+    // own/rent
+    () => `
+      ${qualifyHeader(2, 6, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <h2 class="scr-title">Do you own or rent your home?</h2>
+        <div class="opt-list">
+          <div class="opt">I own my home</div>
+          <div class="opt">I rent</div>
+        </div>
+      </div></div>
+      ${footer()}
+    `,
+    // combined: reason + electricity provider
+    () => `
+      ${qualifyHeader(3, 6, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 30px"></div>
+        <h2 class="scr-title">Tell us about your home</h2>
+        <p class="scr-sub" style="font-weight:600;margin-bottom:6px">What matters most?</p>
+        <div class="opt-list">
+          <div class="opt">Backup power when the grid goes down</div>
+          <div class="opt">Lower, fixed energy rate</div>
+          <div class="opt">Both</div>
+        </div>
+        <p class="scr-sub" style="font-weight:600;margin: 12px 0 6px">How do you get electricity today?</p>
+        <div class="opt-list">
+          <div class="opt">I pick my own provider</div>
+          <div class="opt">It's assigned (city / co-op)</div>
+          <div class="opt">Not sure</div>
+        </div>
+      </div></div>
+      ${footer()}
+    `,
+    // energy setup with skip
+    () => `
+      ${qualifyHeader(4, 6, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 30px"></div>
+        <h2 class="scr-title">Anything already powering your home?</h2>
+        <p class="scr-sub">Optional — we'll confirm during your free photo review.</p>
+        <div class="iconpick">
+          <div class="ip"><span class="glyph">☀️</span>Solar</div>
+          <div class="ip"><span class="glyph">⚡</span>Portable gen</div>
+          <div class="ip"><span class="glyph">🏠</span>Whole-home gen</div>
+          <div class="ip"><span class="glyph">🔋</span>Whole-home battery</div>
+          <div class="ip" style="grid-column: span 2"><span class="glyph">—</span>None of the above</div>
+        </div>
+      </div></div>
+      ${footerSkip()}
+    `,
+    // name only
+    () => `
+      ${qualifyHeader(5, 6, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <h2 class="scr-title">What should we call you?</h2>
+        <div class="input-row">
+          <div class="field boxed"><label>First name</label><input placeholder="Tony"/></div>
+          <div class="field boxed"><label>Last name</label><input placeholder="Rocca"/></div>
+        </div>
+      </div></div>
+      ${footer()}
+    `,
+    // pricing preview ⚠️ this is functional lead capture moment for funnel definition (we have email + name + address)
+    () => `
+      ${qualifyHeader(6, 6, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 20px"></div>
+        <div class="neighbor-chip">400 neighbors in Pflugerville already joined</div>
+        <h2 class="scr-title">Your plan, Tony.</h2>
+        <p class="scr-sub">Here's what Base looks like at 4205 Arthurs Flight Path.</p>
+        <div class="priceblock">
+          <div class="row"><span>Single Battery — 24h backup</span><span>$695 install</span></div>
+          <div class="row"><span>Recurring</span><span>$19/mo · 10 yr term</span></div>
+          <div class="row lg"><span>All-in rate</span><span>13.8¢/kWh</span></div>
+        </div>
+        <p class="scr-sub" style="font-size:12px">Want to see this with a Base advisor or schedule a free photo review? We'll need a phone number to reach you.</p>
+      </div></div>
+      ${footer('Get my photo review')}
+    `,
+    // phone capture
+    () => `
+      ${qualifyHeader(6, 6, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <h2 class="scr-title">What's the best number to text?</h2>
+        <p class="scr-sub">We'll send your photo-review link by text. No calls unless you ask.</p>
+        <div class="input-row">
+          <div class="field boxed"><label>Phone</label><input placeholder="(201) 555-0123"/></div>
+        </div>
+        <div class="tcpa collapsed"><span>Why we ask for your phone</span><span>›</span></div>
+      </div></div>
+      ${footer('Send me the link')}
+    `,
+    // confirmation
+    () => `
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 100px"></div>
+        <h2 class="scr-title">You're all set, Tony.</h2>
+        <p class="scr-sub">Your photo-review link is on its way to your phone. We've also emailed your plan summary so you can come back any time.</p>
+      </div></div>
+    `,
+  ],
+};
+
+// ============================================================
+// PATH B — RADICALLY SHORT
+// ============================================================
+const PATH_B = {
+  name: 'Path B · Radically Short',
+  tag: 'PATH B',
+  title: 'Radically Short',
+  desc: 'Skip qualification entirely in-flow. Address → contact info → done. Qualify on the call.',
+  changes: [
+    'No own/rent, no reason, no electricity provider, no energy setup',
+    'Lead captured in 2 screens after address',
+    'All qualification deferred to nurture / sales call / photo review',
+  ],
+  learn: 'Do we actually need qualification before a human touches the lead? This tells us the floor on form length. Risk: sales gets less-qualified leads, so call-book and install-qual rate are the guardrails.',
+  screens: [
+    () => homepage(),
+    // qualify + name + email + phone all on one
+    () => `
+      ${qualifyHeader(1, 2, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 20px"></div>
+        <div class="neighbor-chip">400 neighbors in Pflugerville already joined</div>
+        <h2 class="scr-title">🎉 You're in. Save your spot.</h2>
+        <p class="scr-sub">We'll send your custom plan and a Base advisor will text you to walk through it.</p>
+        <div class="input-row">
+          <div class="field boxed"><label>First name</label><input placeholder="Tony"/></div>
+          <div class="field boxed"><label>Last name</label><input placeholder="Rocca"/></div>
+          <div class="field boxed"><label>Email</label><input placeholder="name@example.com"/></div>
+          <div class="field boxed"><label>Phone (text only)</label><input placeholder="(201) 555-0123"/></div>
+        </div>
+        <div class="tcpa collapsed"><span>How we'll use your contact info</span><span>›</span></div>
+      </div></div>
+      ${footer('Send me my plan', false)}
+    `,
+    // confirmation + plan teaser
+    () => `
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <h2 class="scr-title">You're in, Tony.</h2>
+        <p class="scr-sub">A Base advisor will text you within an hour to confirm a few details about your home and walk through your plan.</p>
+        <div class="priceblock">
+          <div class="row"><span>Single Battery</span><span>$695 install</span></div>
+          <div class="row"><span>Recurring</span><span>$19/mo</span></div>
+          <div class="row lg"><span>All-in rate</span><span>13.8¢/kWh</span></div>
+        </div>
+      </div></div>
+    `,
+  ],
+};
+
+// ============================================================
+// PATH C — SMART DEFAULTS
+// ============================================================
+const PATH_C = {
+  name: 'Path C · Smart Defaults',
+  tag: 'PATH C',
+  title: 'Smart Defaults',
+  desc: 'Use the address to auto-fill what we can. Combine soft questions onto one screen.',
+  changes: [
+    '"Electricity provider" auto-detected from address (no question)',
+    '"Reason" + "Energy setup" combined into one icon-pick screen',
+    'Educational content moved to a help icon',
+    '9 screens → 5 screens',
+    'Phone deferred to scheduling',
+  ],
+  learn: 'How much of the form can smart defaults replace? And does compressed icon-pick beat single-question screens? Tells us the upper bound on data efficiency.',
+  screens: [
+    () => homepage(),
+    // qualify + email
+    () => `
+      ${qualifyHeader(1, 5, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 30px"></div>
+        <h2 class="scr-title">🎉 Available in Pflugerville.</h2>
+        <p class="scr-sub">Where should we send your custom plan?</p>
+        <div class="input-row">
+          <div class="field boxed"><label>Email</label><input placeholder="name@example.com"/></div>
+        </div>
+      </div></div>
+      ${footer('Continue', false)}
+    `,
+    // own/rent (the only hard DQ)
+    () => `
+      ${qualifyHeader(2, 5, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <h2 class="scr-title">Do you own or rent?</h2>
+        <div class="opt-list">
+          <div class="opt">I own</div>
+          <div class="opt">I rent</div>
+        </div>
+      </div></div>
+      ${footer()}
+    `,
+    // smart defaults screen
+    () => `
+      ${qualifyHeader(3, 5, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 24px"></div>
+        <h2 class="scr-title">Quick check on your home<span class="auto-fill-pill">we filled what we could</span></h2>
+        <div class="summary-row"><span>Provider</span><b>Oncor <span style="color:var(--base-muted);font-weight:400;font-size:11px;margin-left:6px">(auto-detected)</span></b></div>
+        <div class="summary-row"><span>Plan type</span><b>Choose your own</b></div>
+        <p class="scr-sub" style="font-weight:600; margin-top: 14px">Anything already powering your home?</p>
+        <div class="iconpick">
+          <div class="ip"><span class="glyph">☀️</span>Solar</div>
+          <div class="ip"><span class="glyph">⚡</span>Portable gen</div>
+          <div class="ip"><span class="glyph">🏠</span>Whole-home gen</div>
+          <div class="ip selected"><span class="glyph">—</span>None</div>
+        </div>
+      </div></div>
+      ${footer()}
+    `,
+    // name + plan preview
+    () => `
+      ${qualifyHeader(4, 5, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 20px"></div>
+        <div class="neighbor-chip">400 neighbors in Pflugerville already joined</div>
+        <h2 class="scr-title">Your plan</h2>
+        <div class="priceblock">
+          <div class="row"><span>Single Battery</span><span>$695 install · $19/mo</span></div>
+          <div class="row lg"><span>All-in rate</span><span>13.8¢/kWh</span></div>
+        </div>
+        <div class="input-row">
+          <div class="field boxed"><label>First name</label><input placeholder="Tony"/></div>
+          <div class="field boxed"><label>Last name</label><input placeholder="Rocca"/></div>
+        </div>
+      </div></div>
+      ${footer('See next steps')}
+    `,
+    // schedule call w/ phone
+    () => `
+      ${qualifyHeader(5, 5, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 40px"></div>
+        <h2 class="scr-title">Get your free home photo review</h2>
+        <p class="scr-sub">We'll text you the link.</p>
+        <div class="input-row">
+          <div class="field boxed"><label>Phone (text only)</label><input placeholder="(201) 555-0123"/></div>
+        </div>
+        <div class="tcpa collapsed"><span>Why we need your phone</span><span>›</span></div>
+      </div></div>
+      ${footer('Send me the link')}
+    `,
+    // confirmation
+    () => `
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 100px"></div>
+        <h2 class="scr-title">You're set, Tony.</h2>
+        <p class="scr-sub">Photo-review link sent. We've also emailed your plan summary.</p>
+      </div></div>
+    `,
+  ],
+};
+
+// ============================================================
+// PATH D — TRUST-BUILDING (same fields, hand-holding)
+// ============================================================
+const PATH_D = {
+  name: 'Path D · Trust-Building',
+  tag: 'PATH D',
+  title: 'Trust-Building',
+  desc: 'Same fields, same order. Better hand-holding throughout.',
+  changes: [
+    'Real progress bar with "Step X of Y · ~Ns left"',
+    '"What happens next" preview after each step',
+    'Local social proof on every screen',
+    'TCPA disclosure collapsed by default',
+    'Friendlier micro-copy',
+  ],
+  learn: 'Is the friction structural (form needs a rebuild) or emotional (feels scary)? If D moves the needle materially, we can de-prioritize the rebuild. If not, we know the architecture is the problem.',
+  screens: [
+    () => homepage(),
+    // qualify - rent/own with neighbor chip + what's next
+    () => `
+      ${qualifyHeader(1, 7, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 14px"></div>
+        <div class="neighbor-chip">400 neighbors in Pflugerville already joined</div>
+        <h2 class="scr-title">🎉 Base is available in your part of Pflugerville.</h2>
+        <p class="scr-sub">Quick fit check — about 90 seconds. No commitment.</p>
+        <p class="scr-sub" style="font-weight:600">Do you own or rent?</p>
+        <div class="opt-list">
+          <div class="opt">I own my home</div>
+          <div class="opt">I rent</div>
+        </div>
+        <div class="what-next"><b>Next:</b> two quick questions about your power preferences.</div>
+      </div></div>
+      ${footer('OK', false)}
+    `,
+    // reason
+    () => `
+      ${qualifyHeader(2, 7, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 30px"></div>
+        <h2 class="scr-title">What matters most?</h2>
+        <div class="opt-list">
+          <div class="opt">Reliable backup power</div>
+          <div class="opt">A low, fixed energy rate</div>
+          <div class="opt">Both</div>
+        </div>
+        <div class="what-next"><b>Next:</b> a quick question about your current electric provider.</div>
+      </div></div>
+      ${footer()}
+    `,
+    // electricity (no interstitial)
+    () => `
+      ${qualifyHeader(3, 7, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 30px"></div>
+        <h2 class="scr-title">How do you get electricity today?</h2>
+        <div class="opt-list">
+          <div class="opt"><b>I pick my own plan</b></div>
+          <div class="opt"><b>It's assigned</b><small>City or co-op, can't switch</small></div>
+          <div class="opt">Not sure</div>
+        </div>
+        <div class="what-next"><b>Next:</b> what's already powering your home (if anything).</div>
+      </div></div>
+      ${footer()}
+    `,
+    // energy setup
+    () => `
+      ${qualifyHeader(4, 7, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 30px"></div>
+        <h2 class="scr-title">Anything already powering your home?</h2>
+        <p class="scr-sub">Pick any that apply.</p>
+        <div class="iconpick">
+          <div class="ip"><span class="glyph">☀️</span>Solar</div>
+          <div class="ip"><span class="glyph">⚡</span>Portable gen</div>
+          <div class="ip"><span class="glyph">🏠</span>Whole-home gen</div>
+          <div class="ip"><span class="glyph">🔋</span>Whole-home battery</div>
+          <div class="ip selected" style="grid-column: span 2"><span class="glyph">—</span>None</div>
+        </div>
+        <div class="what-next"><b>Next:</b> save your progress so you can come back anytime.</div>
+      </div></div>
+      ${footer()}
+    `,
+    // contact info ⚠️ same fields but trust framing
+    () => `
+      ${qualifyHeader(5, 7, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 14px"></div>
+        <div class="neighbor-chip">400 neighbors in Pflugerville already joined</div>
+        <h2 class="scr-title">Save your progress</h2>
+        <p class="scr-sub">So you can come back to this and don't have to start over.</p>
+        <div class="input-row">
+          <div class="field boxed"><label>First name</label><input placeholder="Tony"/></div>
+          <div class="field boxed"><label>Last name</label><input placeholder="Rocca"/></div>
+          <div class="field boxed"><label>Email</label><input placeholder="name@example.com"/></div>
+          <div class="field boxed"><label>Phone (text only)</label><input placeholder="(201) 555-0123"/></div>
+        </div>
+        <div class="tcpa collapsed"><span>Why we ask for your phone</span><span>›</span></div>
+      </div></div>
+      ${footer('Save & continue')}
+    `,
+    // schedule call
+    () => `
+      ${qualifyHeader(6, 7, true)}
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 60px"></div>
+        <h2 class="scr-title">You're ready for backup power.</h2>
+        <div class="opt-list">
+          <div class="opt"><b>Risk-free home photo review</b><small>(most popular)</small></div>
+          <div class="opt">Talk to a Base Energy Advisor</div>
+        </div>
+      </div></div>
+      ${footer('Submit')}
+    `,
+    // confirmation
+    () => `
+      <div class="screen-scroll"><div class="scr-body">
+        <div style="height: 80px"></div>
+        <h2 class="scr-title">You're all set, Tony.</h2>
+        <p class="scr-sub">A Base Energy Advisor will reach out within 24 hours.</p>
+      </div></div>
+    `,
+  ],
+};
+
+// ============================================================
+// PATH REGISTRY + RENDERING
+// ============================================================
+const PATHS = { '0': PATH_0, 'A': PATH_A, 'B': PATH_B, 'C': PATH_C, 'D': PATH_D };
+
+function render() {
+  const path = PATHS[state.path];
+  const screen = path.screens[state.step];
+  document.getElementById('screen').innerHTML = screen();
+
+  // Update info card
+  document.getElementById('infoTag').textContent = path.tag;
+  document.getElementById('infoTitle').textContent = path.title;
+  document.getElementById('infoDesc').textContent = path.desc;
+  document.getElementById('infoLearn').textContent = path.learn;
+  document.getElementById('infoStep').textContent = state.step + 1;
+  document.getElementById('infoTotal').textContent = path.screens.length;
+
+  const changesEl = document.getElementById('infoChanges');
+  changesEl.innerHTML = path.changes.map(c => `<div class="changeline">${c}</div>`).join('');
+
+  // Update phone meta
+  document.getElementById('phoneMetaPath').textContent = path.name;
+  document.getElementById('phoneMetaStep').textContent = state.step + 1;
+  document.getElementById('phoneMetaTotal').textContent = path.screens.length;
+
+  // Active path button
+  document.querySelectorAll('.pathbtn').forEach(b => {
+    b.classList.toggle('active', b.dataset.path === state.path);
+  });
+}
+
+function next() {
+  const path = PATHS[state.path];
+  if (state.step < path.screens.length - 1) {
+    state.step++;
+    render();
+  }
+}
+
+function prev() {
+  if (state.step > 0) {
+    state.step--;
+    render();
+  }
+}
+
+function resetPath() {
+  state.step = 0;
+  render();
+}
+
+function setPath(p) {
+  state.path = p;
+  state.step = 0;
+  render();
+}
+
+document.querySelectorAll('.pathbtn').forEach(b => {
+  b.addEventListener('click', () => setPath(b.dataset.path));
+});
+
+render();
+</script>
+
+</body>
+</html>
