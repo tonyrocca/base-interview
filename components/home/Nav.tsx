@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useFlags } from "@/components/flags/FlagsProvider";
 
 export function Nav() {
   // Track scroll to swap nav style: transparent over hero, opaque after.
@@ -12,6 +14,17 @@ export function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // "Get started" always starts the funnel from step 0 (first screen of
+  // the active path). For Email First that's the Email screen.
+  const { path, setStep } = useFlags();
+  const router = useRouter();
+  const handleGetStarted = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setStep(0);
+    const qs = path !== "0" ? `?path=${path}` : "";
+    router.push(`/onboarding${qs}`);
+  };
 
   return (
     <header
@@ -82,6 +95,7 @@ export function Nav() {
           </a>
           <Link
             href="/onboarding"
+            onClick={handleGetStarted}
             className="inline-flex h-10 items-center rounded-btn bg-base-green-mid px-3.5 text-[14px] font-semibold text-base-green-dark transition hover:bg-base-green-light"
           >
             Get started

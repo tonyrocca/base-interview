@@ -1,7 +1,22 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useFlags } from "@/components/flags/FlagsProvider";
 
 export function Pricing() {
+  // Pricing CTAs share the nav's "Get started" behavior — always reset
+  // funnel to step 0 of the active path so renters or experiments don't
+  // land deep into a previous run.
+  const { path, setStep } = useFlags();
+  const router = useRouter();
+  const handleGetStarted = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setStep(0);
+    const qs = path !== "0" ? `?path=${path}` : "";
+    router.push(`/onboarding${qs}`);
+  };
   return (
     <section id="pricing" className="bg-base-bg py-20 md:py-28">
       <div className="mx-auto max-w-[1280px] px-6">
@@ -48,7 +63,7 @@ export function Pricing() {
               </ul>
 
               <Link
-                href="/onboarding"
+                href="/onboarding" onClick={handleGetStarted}
                 className="mt-auto inline-flex h-12 w-fit items-center gap-2 rounded-btn bg-base-green-mid px-5 text-[14px] font-semibold text-base-green-dark transition hover:bg-base-green-light"
                 style={{ marginTop: "2.5rem" }}
               >
@@ -107,7 +122,7 @@ export function Pricing() {
               </ul>
 
               <Link
-                href="/onboarding"
+                href="/onboarding" onClick={handleGetStarted}
                 className="mt-auto inline-flex h-12 w-fit items-center gap-2 rounded-btn bg-base-green-mid px-5 text-[14px] font-semibold text-base-green-dark transition hover:bg-base-green-light"
                 style={{ marginTop: "2.5rem" }}
               >
