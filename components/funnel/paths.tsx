@@ -544,41 +544,44 @@ const CutOverhead = {
 };
 
 // =============================================================================
-// VARIANT 3 — AUTO-FILL PROVIDER — 5 steps
+// VARIANT 3 — EMAIL FIRST — 5 steps
+// Email captured before address. Every visitor becomes recoverable —
+// even those whose address falls outside Base's service area.
 // =============================================================================
 
-const AutoFill = {
-  // 1 — Address (triggers provider lookup)
-  S1_Address: ({ next }: ScreenProps) => (
+const EmailFirst = {
+  // 1 ★ — Email (NEW POSITION: before address)
+  S1_Email: ({ next }: ScreenProps) => (
     <Screen>
       <Header numerator={1} denominator={5} />
       <ScreenScroll>
         <div className="mt-3" />
-        <Title>Let&apos;s see if Base is available in your area.</Title>
-        <Sub>Enter your home address to get started.</Sub>
-        <AddressInput />
-        <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-base-green-light/60 px-2.5 py-1 text-[10px] font-medium text-base-green-deep">
-          ✓ We&apos;ll auto-detect your utility provider from this
+        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-base-green-light px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-base-green-deep">
+          ★ Email first
         </div>
-      </ScreenScroll>
-      <Footer next={next} back={() => {}} ctaLabel="Continue" showBack={false} />
-    </Screen>
-  ),
-
-  // 2 — Email
-  S2_Email: ({ next, back }: ScreenProps) => (
-    <Screen>
-      <Header numerator={2} denominator={5} />
-      <ScreenScroll>
-        <div className="mt-3" />
-        <Title>Where should we send your custom plan?</Title>
+        <Title>See if Base is right for your home.</Title>
         <Sub>
-          We&apos;ll have your savings estimate ready in just a few clicks.
+          Drop your email and we&apos;ll send your custom plan + savings
+          estimate, even if you don&apos;t finish today.
         </Sub>
         <div className="mt-4 grid gap-3">
           <Field label="Email" placeholder="name@example.com" type="email" />
         </div>
         <Helper>No spam. Only used to send your plan.</Helper>
+      </ScreenScroll>
+      <Footer next={next} back={() => {}} ctaLabel="Continue" showBack={false} />
+    </Screen>
+  ),
+
+  // 2 — Address
+  S2_Address: ({ next, back }: ScreenProps) => (
+    <Screen>
+      <Header numerator={2} denominator={5} />
+      <ScreenScroll>
+        <div className="mt-3" />
+        <Title>Now let&apos;s see if Base is available in your area.</Title>
+        <Sub>Enter your home address to confirm Base serves your area.</Sub>
+        <AddressInput />
       </ScreenScroll>
       <Footer next={next} back={back} ctaLabel="Continue" />
     </Screen>
@@ -594,7 +597,7 @@ const AutoFill = {
         <OptList
           options={[
             { label: "I own my home", onClick: next },
-            { label: "I rent", onClick: () => setStep(AUTOFILL_RENT_START) },
+            { label: "I rent", onClick: () => setStep(EMAILFIRST_RENT_START) },
           ]}
         />
       </ScreenScroll>
@@ -602,7 +605,7 @@ const AutoFill = {
     </Screen>
   ),
 
-  // 4 — Setup (optional) — provider question gone
+  // 4 — Setup (optional)
   S4_Setup: ({ next, back }: ScreenProps) => (
     <Screen>
       <Header numerator={4} denominator={5} />
@@ -620,7 +623,7 @@ const AutoFill = {
     </Screen>
   ),
 
-  // 5 — Combined: Name + Pricing (with auto-detected provider) + Phone + Schedule
+  // 5 — Combined: Name + Pricing + Phone + Schedule
   S5_Combined: ({ next, back }: ScreenProps) => (
     <Screen>
       <Header numerator={5} denominator={5} />
@@ -630,10 +633,7 @@ const AutoFill = {
         <Sub>One screen. Then you&apos;re done.</Sub>
 
         <div className="mt-4">
-          <PricingPreviewCard
-            detectedProvider="Reliant Energy"
-            showChangeLink
-          />
+          <PricingPreviewCard />
         </div>
 
         <div className="mt-5 grid gap-3">
@@ -732,20 +732,20 @@ const CUTOVERHEAD_OWNER: ScreenComponent[] = [
 ];
 export const CUTOVERHEAD_RENT_START = CUTOVERHEAD_OWNER.length;
 
-const AUTOFILL_OWNER: ScreenComponent[] = [
-  AutoFill.S1_Address,
-  AutoFill.S2_Email,
-  AutoFill.S3_OwnRent,
-  AutoFill.S4_Setup,
-  AutoFill.S5_Combined,
+const EMAILFIRST_OWNER: ScreenComponent[] = [
+  EmailFirst.S1_Email,
+  EmailFirst.S2_Address,
+  EmailFirst.S3_OwnRent,
+  EmailFirst.S4_Setup,
+  EmailFirst.S5_Combined,
   CheckoutStep,
-  AutoFill.Confirm,
+  EmailFirst.Confirm,
 ];
-export const AUTOFILL_RENT_START = AUTOFILL_OWNER.length;
+export const EMAILFIRST_RENT_START = EMAILFIRST_OWNER.length;
 
 export const ALL_PATHS: Record<PathId, ScreenComponent[]> = {
   "0": [...CONTROL_OWNER, ...RENT_FLOW],
   A: [...REORDER_OWNER, ...RENT_FLOW],
   B: [...CUTOVERHEAD_OWNER, ...RENT_FLOW],
-  C: [...AUTOFILL_OWNER, ...RENT_FLOW],
+  C: [...EMAILFIRST_OWNER, ...RENT_FLOW],
 };
